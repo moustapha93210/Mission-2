@@ -5,6 +5,7 @@ use Illuminate\Http\Request;
 use PdoGsb;
 use MyDate;
 use Barryvdh\DomPDF\Facade\Pdf;
+
 class gestionVisiteurController extends Controller
 {
 
@@ -119,7 +120,7 @@ class gestionVisiteurController extends Controller
             $gestionnaire = session('gestionnaire');
 
 
-            $vue = view('ajoutervisiteur')->with('visiteur', $gestionnaire);
+            $vue = view('ajoutervisiteur')->with('gestionnaire', $gestionnaire);
 
             return $vue;
         } else {
@@ -242,14 +243,14 @@ class gestionVisiteurController extends Controller
             //echo "kjhfuhskf";
 
 
-            $vue = view('listevisiteur')->with('lesVisiteurs', $lesVisiteurs)
+            $vue = view('listevisiteur')->with('gestionnaire', $gestionnaire)
                 ->with('insertFichFrais', $insertFicheFrais)
                 ->with('insertLigneFraisForfaitETP', $insertLigneFraisForfaitETP)
                 ->with('insertLigneFraisForfaitKM', $insertLigneFraisForfaitKM)
                 ->with('insertLigneFraisForfaitNUI', $insertLigneFraisForfaitNUI)
                 ->with('insertLigneFraisForfaitREP', $insertLigneFraisForfaitREP)
                 ->with('insertVisiteur', $insertVisiteur)
-                ->with('gestionnaire', $gestionnaire);
+                ->with('lesVisiteurs', $lesVisiteurs);
 
             return $vue;
         } else {
@@ -527,9 +528,12 @@ class gestionVisiteurController extends Controller
 
     function genererPDF(Request $request)
     {
+
+        $pdf = PDF::loadHTML("<p>Bonjour</p>");
+        return $pdf->download('invoice.pdf');
         /**/
 
-        if (session('comptable') != null)
+        /*if (session('comptable') != null)
         {
             $comptable = session('comptable');
 
@@ -546,7 +550,7 @@ class gestionVisiteurController extends Controller
         else
         {
             return view('connexion')->with('erreurs', null);
-        }
+        }*/
     }
 
 }
