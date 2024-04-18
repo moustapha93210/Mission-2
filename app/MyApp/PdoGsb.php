@@ -549,6 +549,7 @@ class PdoGsb{
 
 	public function insertVisiteur($id, $nom, $prenom, $login, $mdp, $adresse, $cp, $ville, $dateEmbauche)
 	{
+
 		$sql = "INSERT INTO `visiteur`(`id`, `nom`, `prenom`, `login`, `mdp`, `adresse`, `cp`, `ville`, `dateEmbauche`)
 		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
@@ -755,6 +756,36 @@ class PdoGsb{
 
         echo" <br> ";
         var_dump($results);
+
+        return $results;
+
+
+
+    }
+
+    public function getUnIdVisiteur2($id)
+    {
+        $sql = "SELECT *
+        FROM visiteur
+		WHERE `id` = ?";
+
+        $stmt = $this->monPdo->prepare($sql);
+        //dd($stmt);
+
+
+        $stmt->bindValue(1, $id, PDO::PARAM_STR);
+
+
+        //dd($stmt);
+        $stmt->execute();
+        //dd($stmt);
+        echo" <br> ";
+        //var_dump($stmt);
+
+        $results = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        echo" <br> ";
+        //var_dump($results);
 
         return $results;
 

@@ -136,10 +136,32 @@ class gestionVisiteurController extends Controller
 
             $gestionnaire = session('gestionnaire');
 
+            $validatedData = $request->validate([
+                'nomVisiteur' => 'required|string|max:255',
+                'prenomVisiteur' => 'required|string|max:255',
+                'loginVisiteur' => 'required|string|max:255',
+                'adresseVisiteur' => 'required|string|max:255',
+                'cpVisiteur' => 'required|regex:/^\d{5}$/',
+                'villeVisiteur' => 'required|string|max:255',
+                'dateVisiteur' => 'required|date_format:Y-m-d',
+            ]);
 
             //INSERT POUR VISITEUR
-            $id = htmlentities($request['idVisiteur']);
-            var_dump("<br> Id : " . $id);
+
+            /*Générer une lettre aléatoire minuscule (les lettres minuscules sont
+            de 97 à 122 dans la table ASCII et je démarre de 104 car je commence
+            à partir de la lettre h (car pas présente dans la bdd)*/
+            $lettre = sprintf('%c', rand(104, 122));
+            //echo $lettre;
+
+            $nombre = sprintf('%03d', rand(100, 999));
+            //echo $nombre;
+
+            $id = $lettre . $nombre;
+            //echo $id;
+
+            /*$id = htmlentities($request['idVisiteur']);
+            var_dump("<br> Id : " . $id);*/
 
             $nom = htmlentities($request['nomVisiteur']);
             var_dump("<br> Nom : " . $nom);
@@ -150,8 +172,24 @@ class gestionVisiteurController extends Controller
             $login = htmlentities($request['loginVisiteur']);
             var_dump("<br> Login : " . $login);
 
-            $mdp = htmlentities($request['mdpVisiteur']);
-            var_dump("<br> Mdp : " . $mdp);
+
+            function generationMDP($length = 5)
+            {
+                $chars = 'abcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()-_=+';
+                $password = '';
+                for ($i = 0; $i < $length; $i++)
+                {
+                    $randomIndex = rand(0, strlen($chars) - 1);
+                    $password .= $chars[$randomIndex];
+                }
+                return $password;
+            }
+
+            $password = generationMDP();
+            echo 'Mot de passe avant hash : ' . $password . '<br>';
+
+            $mdp = password_hash($password, PASSWORD_DEFAULT);
+            //echo $mdp;
 
             $adresse = htmlentities($request['adresseVisiteur']);
             var_dump("<br> Adresse : " . $adresse);
@@ -168,6 +206,7 @@ class gestionVisiteurController extends Controller
 
             $typeUser = htmlentities($request['typeUser']);
             var_dump("<br> Date embauche : " . $dateEmbauche);
+
 
             $insertVisiteur = PdoGsb::insertVisiteur($id, $nom, $prenom, $login, $mdp, $adresse, $cp, $ville, $dateEmbauche, $typeUser);
 
@@ -526,31 +565,44 @@ class gestionVisiteurController extends Controller
         }
     }
 
+    function visiteurPdf(string $idVisiteur)
+    {
+
+        $trouverUnVisiteur = PdoGsb::getUnIdVisiteur($idVisiteur);
+
+        return $trouverUnVisiteur;
+
+    }
+
     function genererPDF(Request $request)
     {
 
-        $pdf = PDF::loadHTML("<p>Bonjour</p>");
-        return $pdf->download('invoice.pdf');
-        /**/
-
-        /*if (session('comptable') != null)
+        if(session('gestionnaire') != null)
         {
-            $comptable = session('comptable');
+           $gestionnaire = session('gestionnaire');
 
-            $idvisiteur = $request['idVisiteur'];
-            var_dump($idvisiteur);
+           $idVisiteur = $request['id'];
+           var_dump($idVisiteur);
 
-            $trouverUnVisiteur = PdoGsb::getUnIdVisiteur($idvisiteur);
+           $trouverUnVisiteur = PdoGsb::getUnIdVisiteur2($idVisiteur);
+           //dd($trouverUnVisiteur);
 
 
-            $pdf = Pdf::loadhtml('<h1>$trouverUnVisiteur[nom]</h1>');
+
+            $pdf = PDF::loadHTML(
+                "<li>Id : $trouverUnVisiteur[id]</li>
+                       <li>Nom : $trouverUnVisiteur[nom]</li>
+                       <li>Prenom : $trouverUnVisiteur[prenom]</li>
+                       <li>Adresse : $trouverUnVisiteur[adresse]</li>
+                       <li>Ville : $trouverUnVisiteur[ville]</li>
+                       <li>Code Postale : $trouverUnVisiteur[cp]</li>
+                       <li>Date d'embauche : $trouverUnVisiteur[dateEmbauche]</li>");
             return $pdf->download('invoice.pdf');
-
         }
-        else
-        {
-            return view('connexion')->with('erreurs', null);
-        }*/
+
+
     }
+
+
 
 }
